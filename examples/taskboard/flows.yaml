@@ -1,0 +1,60 @@
+# Curated demo flows for the taskboard example — a hand-polished version of
+# what `democreator discover examples/taskboard/tests` drafts.
+base_url: http://localhost:8123
+
+viewport: {width: 1280, height: 720}
+
+pacing:
+  action_pause_ms: 900
+  typing_delay_ms: 55
+  mouse_steps: 40
+  caption_lead_ms: 700
+
+flows:
+  - id: add-and-complete
+    title: "Add and complete a task"
+    source: examples/taskboard/tests/taskboard.spec.ts
+    priority: 10
+    tags: [smoke]
+    steps:
+      - action: goto
+        url: /
+        caption: "Open the taskboard"
+      - action: fill
+        locator: "#new-task"
+        value: "Write the quarterly report"
+        caption: "Describe the new task"
+      - action: click
+        locator: {role: button, name: "Add task"}
+        caption: "Add it to the board"
+      - action: expect_visible
+        locator: "#tasks li"
+      - action: check
+        locator: "#tasks li input[type=checkbox]"
+        caption: "Mark it done"
+      - action: pause
+        seconds: 1.5
+
+  - id: filter-done
+    title: "Filter to completed tasks"
+    source: examples/taskboard/tests/taskboard.spec.ts
+    priority: 5
+    steps:
+      - action: goto
+        url: /
+        caption: "Start fresh"
+      - action: fill
+        locator: "#new-task"
+        value: "Ship the release"
+      - action: click
+        locator: {role: button, name: "Add task"}
+      - action: check
+        locator: "#tasks li input[type=checkbox]"
+        caption: "Complete the task"
+      - action: click
+        locator: {role: button, name: "Done"}
+        caption: "Filter to the Done view"
+      - action: expect_visible
+        locator: "#tasks li.done"
+      - action: pause
+        seconds: 1.5

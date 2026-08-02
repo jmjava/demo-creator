@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Taskboard</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: system-ui, sans-serif;
+    background: #f3f4f6; color: #111827;
+  }
+  header {
+    background: #111827; color: #f9fafb; padding: 20px 36px;
+    display: flex; align-items: baseline; gap: 14px;
+  }
+  header h1 { margin: 0; font-size: 24px; }
+  header span { color: #9ca3af; font-size: 14px; }
+  main { max-width: 720px; margin: 36px auto; padding: 0 16px; }
+  .composer { display: flex; gap: 10px; margin-bottom: 22px; }
+  .composer input {
+    flex: 1; padding: 12px 14px; font-size: 16px;
+    border: 1px solid #d1d5db; border-radius: 8px;
+  }
+  .composer button {
+    padding: 12px 22px; font-size: 16px; font-weight: 600;
+    background: #2563eb; color: white; border: 0; border-radius: 8px; cursor: pointer;
+  }
+  .composer button:hover { background: #1d4ed8; }
+  .filters { display: flex; gap: 8px; margin-bottom: 14px; }
+  .filters button {
+    padding: 6px 16px; font-size: 14px; border-radius: 999px;
+    border: 1px solid #d1d5db; background: white; cursor: pointer;
+  }
+  .filters button[aria-pressed="true"] { background: #111827; color: white; border-color: #111827; }
+  ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  li {
+    background: white; border: 1px solid #e5e7eb; border-radius: 10px;
+    padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+    font-size: 16px;
+  }
+  li.done label { text-decoration: line-through; color: #9ca3af; }
+  li input[type=checkbox] { width: 18px; height: 18px; }
+  .empty { color: #6b7280; padding: 28px; text-align: center; }
+  .count { margin-top: 16px; color: #6b7280; font-size: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Taskboard</h1>
+  <span>the demo app for democreator</span>
+</header>
+<main>
+  <div class="composer">
+    <input id="new-task" placeholder="What needs doing?" aria-label="New task">
+    <button id="add-task">Add task</button>
+  </div>
+  <div class="filters" role="group" aria-label="Filter tasks">
+    <button data-filter="all" aria-pressed="true">All</button>
+    <button data-filter="open" aria-pressed="false">Open</button>
+    <button data-filter="done" aria-pressed="false">Done</button>
+  </div>
+  <ul id="tasks"></ul>
+  <p class="empty" id="empty">No tasks yet — add one above.</p>
+  <p class="count" id="count"></p>
+</main>
+<script>
+  const tasks = [];
+  let filter = 'all';
+  const list = document.getElementById('tasks');
+  const empty = document.getElementById('empty');
+  const count = document.getElementById('count');
+  const input = document.getElementById('new-task');
+
+  function render() {
+    list.innerHTML = '';
+    const visible = tasks.filter(t =>
+      filter === 'all' || (filter === 'done') === t.done);
+    for (const task of visible) {
+      const li = document.createElement('li');
+      li.className = task.done ? 'done' : '';
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.checked = task.done;
+      box.id = 'task-' + task.id;
+      box.addEventListener('change', () => { task.done = box.checked; render(); });
+      const label = document.createElement('label');
+      label.htmlFor = box.id;
+      label.textContent = task.text;
+      li.append(box, label);
+      list.append(li);
+    }
+    empty.style.display = visible.length ? 'none' : 'block';
+    const open = tasks.filter(t => !t.done).length;
+    count.textContent = tasks.length ? `${open} open / ${tasks.length} total` : '';
+  }
+
+  document.getElementById('add-task').addEventListener('click', () => {
+    const text = input.value.trim();
+    if (!text) return;
+    tasks.push({ id: tasks.length + 1, text, done: false });
+    input.value = '';
+    render();
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('add-task').click();
+  });
+  for (const btn of document.querySelectorAll('.filters button')) {
+    btn.addEventListener('click', () => {
+      filter = btn.dataset.filter;
+      for (const b of document.querySelectorAll('.filters button'))
+        b.setAttribute('aria-pressed', String(b === btn));
+      render();
+    });
+  }
+  render();
+</script>
+</body>
+</html>
