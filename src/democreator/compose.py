@@ -103,8 +103,10 @@ def compose_demo(plan: ComposePlan) -> Path:
     for cmd in plan.commands:
         if cmd[0] == "__write_concat__":
             list_file = Path(cmd[1])
+            # The concat demuxer resolves relative entries against the list
+            # file's own directory, so entries must be absolute.
             list_file.write_text(
-                "".join(f"file '{p}'\n" for p in cmd[2:]), encoding="utf-8"
+                "".join(f"file '{Path(p).resolve()}'\n" for p in cmd[2:]), encoding="utf-8"
             )
             continue
         proc = subprocess.run(cmd, capture_output=True, text=True)

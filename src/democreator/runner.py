@@ -87,10 +87,10 @@ class DemoRecorder:
             finally:
                 context.close()
                 browser.close()
-
-        if video is None:  # pragma: no cover - recording dir is always set
-            raise DemoRunError("Playwright produced no video for this session")
-        raw_path = Path(video.path())
+            if video is None:  # pragma: no cover - recording dir is always set
+                raise DemoRunError("Playwright produced no video for this session")
+            # Must resolve while the Playwright loop is still alive.
+            raw_path = Path(video.path())
         final = self.out_dir / f"{name}.webm"
         shutil.move(raw_path, final)
         shutil.rmtree(raw_dir, ignore_errors=True)
