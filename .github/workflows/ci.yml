@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          pip install -e ".[dev]"
+          playwright install --with-deps chromium
+      - name: Lint
+        run: ruff check src tests
+      - name: Unit tests
+        run: pytest -m "not integration" -q
+      - name: Integration tests (real recording)
+        run: pytest -m integration -q
