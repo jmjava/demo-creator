@@ -147,6 +147,13 @@ def _parse_step(raw: Any, where: str) -> Step:
     return step
 
 
+def _require_http_base(value: Any, where: str) -> None:
+    if value is None:
+        return
+    if not isinstance(value, str) or not value.lower().startswith(("http://", "https://")):
+        raise FlowSpecError(f"{where}: base_url must be an http or https URL")
+
+
 def _parse_flow(raw: Any, index: int) -> Flow:
     where = f"flows[{index}]"
     if not isinstance(raw, dict):
@@ -167,12 +174,14 @@ def _parse_flow(raw: Any, index: int) -> Flow:
     raw_tags = raw.get("tags", [])
     if not isinstance(raw_tags, list) or any(not isinstance(tag, str) for tag in raw_tags):
         raise FlowSpecError(f"{where}: tags must be a list of strings")
+    base_url = raw.get("base_url")
+    _require_http_base(base_url, where)
     return Flow(
         id=flow_id,
         title=raw.get("title") or flow_id,
         steps=steps,
         description=raw.get("description", ""),
-        base_url=raw.get("base_url"),
+        base_url=base_url,
         source=raw.get("source"),
         priority=int(raw.get("priority", 0)),
         tags=list(raw_tags),
@@ -204,9 +213,11 @@ def parse_flow_spec(data: Any) -> FlowSpec:
             or value < 0
         ):
             raise FlowSpecError(f"pacing {key} must be a finite non-negative number")
+    base_url = data.get("base_url")
+    _require_http_base(base_url, "flows file")
     return FlowSpec(
         flows=flows,
-        base_url=data.get("base_url"),
+        base_url=base_url,
         viewport=viewport,
         pacing=pacing,
     )
