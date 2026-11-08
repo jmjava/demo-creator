@@ -11,6 +11,7 @@ make the footage read like a real human run.
 
 from __future__ import annotations
 
+import math
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -121,7 +122,10 @@ class DemoRecorder:
         elif step.action == "caption":
             self._caption(page, step.text or "")
         elif step.action == "pause":
-            self._sleep(page, float(step.seconds or 0) * 1000)
+            seconds = float(step.seconds or 0)
+            if not math.isfinite(seconds) or seconds < 0:
+                raise DemoRunError("pause seconds must be a finite non-negative number")
+            self._sleep(page, seconds * 1000)
         elif step.action == "expect_visible":
             locator = self._locator(page, step.locator)
             locator.first.wait_for(state="visible", timeout=step.timeout_ms or None)
