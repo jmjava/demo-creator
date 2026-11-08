@@ -105,6 +105,10 @@ def _validate_locator(locator: Any, where: str) -> str | dict[str, Any]:
         extras = set(locator) - set(LOCATOR_KINDS) - {"name", "exact"}
         if extras:
             raise FlowSpecError(f"{where}: unknown locator keys {sorted(extras)}")
+        kind = kinds[0]
+        value = locator[kind]
+        if not isinstance(value, str) or not value.strip():
+            raise FlowSpecError(f"{where}: locator {kind} must be a non-empty string")
         return locator
     raise FlowSpecError(f"{where}: locator must be a string or mapping, got {type(locator).__name__}")
 
