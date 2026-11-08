@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import shlex
 import subprocess
 import time
@@ -16,6 +17,13 @@ class AppLaunchError(RuntimeError):
 
 
 def wait_for_http(url: str, timeout_sec: float = 30.0, interval_sec: float = 0.5) -> None:
+    if (
+        isinstance(timeout_sec, bool)
+        or not isinstance(timeout_sec, (int, float))
+        or not math.isfinite(timeout_sec)
+        or timeout_sec <= 0
+    ):
+        raise AppLaunchError("ready timeout must be a finite positive number of seconds")
     deadline = time.monotonic() + timeout_sec
     last_err: Exception | None = None
     while time.monotonic() < deadline:
