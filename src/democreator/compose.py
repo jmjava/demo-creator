@@ -116,17 +116,25 @@ def plan_compose(
     return ComposePlan(commands=commands, output=output, workdir=workdir)
 
 
+def concat_list_text(paths: list[Path]) -> str:
+    """Build the concat demuxer list. Entries are absolute so they do not
+    depend on the list file's directory. A quote would close an entry early."""
+    lines: list[str] = []
+    for path in paths:
+        resolved = str(Path(path).resolve())
+        if "'" in resolved or "\n" in resolved or "\r" in resolved:
+            raise ComposeError("concat path must not contain a quote or newline")
+        lines.append(f"file '{resolved}'\n")
+    return "".join(lines)
+
+
 def compose_demo(plan: ComposePlan) -> Path:
     plan.workdir.mkdir(parents=True, exist_ok=True)
     plan.output.parent.mkdir(parents=True, exist_ok=True)
     for cmd in plan.commands:
         if cmd[0] == "__write_concat__":
             list_file = Path(cmd[1])
-            # The concat demuxer resolves relative entries against the list
-            # file's own directory, so entries must be absolute.
-            list_file.write_text(
-                "".join(f"file '{Path(p).resolve()}'\n" for p in cmd[2:]), encoding="utf-8"
-            )
+            list_file.write_text(concat_list_text([Path(p) for p in cmd[2:]]), encoding="utf-8")
             continue
         proc = subprocess.run(cmd, capture_output=True, text=True)
         if proc.returncode != 0:
