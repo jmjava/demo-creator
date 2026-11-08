@@ -180,9 +180,13 @@ def _parse_flow(raw: Any, index: int) -> Flow:
     # bool is an int, so int(True) would quietly rank the flow above the default.
     if isinstance(raw_priority, bool) or not isinstance(raw_priority, int):
         raise FlowSpecError(f"{where}: priority must be an integer")
+    raw_title = raw.get("title")
+    # A boolean title is truthy, so it was stored as-is and captioned at record time.
+    if raw_title is not None and not isinstance(raw_title, str):
+        raise FlowSpecError(f"{where}: title must be a string")
     return Flow(
         id=flow_id,
-        title=raw.get("title") or flow_id,
+        title=raw_title or flow_id,
         steps=steps,
         description=raw.get("description", ""),
         base_url=base_url,
