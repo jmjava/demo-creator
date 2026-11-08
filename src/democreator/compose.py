@@ -6,6 +6,7 @@ tested without ffmpeg; ``compose_demo`` runs the plan.
 
 from __future__ import annotations
 
+import math
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -75,6 +76,13 @@ def plan_compose(
     """
     if not segments:
         raise ComposeError("nothing to compose: no recorded segments")
+    if title_cards and (
+        isinstance(title_seconds, bool)
+        or not isinstance(title_seconds, (int, float))
+        or not math.isfinite(title_seconds)
+        or title_seconds <= 0
+    ):
+        raise ComposeError("title card duration must be a finite positive number of seconds")
     workdir = output.parent / ".compose"
     commands: list[list[str]] = []
     parts: list[Path] = []
