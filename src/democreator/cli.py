@@ -27,12 +27,17 @@ def discover(tests_dir: str, out_path: str, base_url: str | None, force: bool) -
     The draft is a starting point: curate it (order, captions, pruning)
     before recording.
     """
+    import yaml
+
     from democreator.discover import draft_flows_yaml
 
     out = Path(out_path)
     if out.exists() and not force:
         raise click.ClickException(f"{out} already exists (use --force to overwrite)")
     doc = draft_flows_yaml(tests_dir, base_url=base_url)
+    data = yaml.safe_load(doc)
+    if not isinstance(data, dict) or not data.get("flows"):
+        raise click.ClickException(f"no demo flows discovered in {tests_dir}")
     out.write_text(doc, encoding="utf-8")
     n_flows = doc.count("\n- id:") + doc.count("\n  - id:")
     click.echo(f"wrote {out} ({n_flows} draft flow(s)) — curate before recording")
