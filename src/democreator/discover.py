@@ -253,7 +253,7 @@ def _tags(title: str) -> list[str]:
 
 def _priority(title: str, tags: list[str]) -> int:
     haystack = " ".join([title.lower(), *tags])
-    return 10 if any(tag in haystack for tag in PRIORITY_TAGS) else 0
+    return 10 if any(re.search(rf"\b{re.escape(tag)}\b", haystack) for tag in PRIORITY_TAGS) else 0
 
 
 _ORIGIN = re.compile(r"^(https?://[^/]+)")
