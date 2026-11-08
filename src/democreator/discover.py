@@ -161,7 +161,10 @@ def _scan_steps(body: str, patterns: list[tuple[re.Pattern, str]]) -> list[dict[
         for m in regex.finditer(body):
             step: dict[str, Any] | None = None
             if kind == "goto":
-                step = {"action": "goto", "url": _g(m, "url") or ""}
+                # An empty URL cannot be loaded: the flows contract requires one.
+                url = _g(m, "url") or ""
+                if url:
+                    step = {"action": "goto", "url": url}
             elif kind in ("direct", "locator_chain"):
                 step = _action_step(m.group("method"), _g(m, "sel") or "", _g(m, "arg"))
             elif kind == "getter_chain":
