@@ -165,7 +165,9 @@ class DemoRecorder:
     # -- helpers ------------------------------------------------------------
 
     def _resolve_url(self, flow: Flow, url: str) -> str:
-        if url.startswith(("http://", "https://")):
+        # Scheme case is not significant. HTTP:// is absolute; joining it onto
+        # the app origin records the wrong page.
+        if url.lower().startswith(("http://", "https://")):
             return url
         base = flow.base_url or self.spec.base_url
         if not base:
