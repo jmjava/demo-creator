@@ -7,6 +7,7 @@ the recorder replays it against the real running app.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -187,6 +188,15 @@ def parse_flow_spec(data: Any) -> FlowSpec:
     viewport.update(data.get("viewport") or {})
     pacing = dict(DEFAULT_PACING)
     pacing.update(data.get("pacing") or {})
+    for key in DEFAULT_PACING:
+        value = pacing[key]
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            or value < 0
+        ):
+            raise FlowSpecError(f"pacing {key} must be a finite non-negative number")
     return FlowSpec(
         flows=flows,
         base_url=data.get("base_url"),
