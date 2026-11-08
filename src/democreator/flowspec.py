@@ -152,6 +152,9 @@ def _parse_flow(raw: Any, index: int) -> Flow:
     steps = [
         _parse_step(s, f"{where}.steps[{i}] (flow '{flow_id}')") for i, s in enumerate(raw_steps)
     ]
+    raw_tags = raw.get("tags", [])
+    if not isinstance(raw_tags, list) or any(not isinstance(tag, str) for tag in raw_tags):
+        raise FlowSpecError(f"{where}: tags must be a list of strings")
     return Flow(
         id=flow_id,
         title=raw.get("title") or flow_id,
@@ -160,7 +163,7 @@ def _parse_flow(raw: Any, index: int) -> Flow:
         base_url=raw.get("base_url"),
         source=raw.get("source"),
         priority=int(raw.get("priority", 0)),
-        tags=list(raw.get("tags", [])),
+        tags=list(raw_tags),
     )
 
 
