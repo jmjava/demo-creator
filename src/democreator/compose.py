@@ -16,6 +16,15 @@ class ComposeError(RuntimeError):
     pass
 
 
+def _positive_pixels(value: object) -> bool:
+    return (
+        not isinstance(value, bool)
+        and isinstance(value, (int, float))
+        and math.isfinite(value)
+        and value > 0
+    )
+
+
 @dataclass
 class ComposePlan:
     commands: list[list[str]]
@@ -83,6 +92,8 @@ def plan_compose(
         or title_seconds <= 0
     ):
         raise ComposeError("title card duration must be a finite positive number of seconds")
+    if title_cards and not (_positive_pixels(width) and _positive_pixels(height)):
+        raise ComposeError("frame width and height must be a finite positive number of pixels")
     workdir = output.parent / ".compose"
     commands: list[list[str]] = []
     parts: list[Path] = []
