@@ -143,7 +143,10 @@ def _action_step(method: str, locator: str | dict, arg: str | None) -> dict[str,
         return None
     step: dict[str, Any] = {"action": action, "locator": locator}
     if action == "fill" or action == "select":
-        step["value"] = arg or ""
+        # An empty value cannot be loaded: the flows contract requires one.
+        if not arg:
+            return None
+        step["value"] = arg
     elif action == "press":
         step["key"] = arg or "Enter"
     return step
