@@ -132,10 +132,14 @@ def _parse_step(raw: Any, where: str) -> Step:
         or raw_timeout < 0
     ):
         raise FlowSpecError(f"{where}: timeout_ms must be a non-negative integer")
+    raw_value = raw.get("value")
+    # str(["red"]) used to load as the typed text "['red']".
+    if raw_value is not None and not isinstance(raw_value, str):
+        raise FlowSpecError(f"{where}: value must be a string")
     step = Step(
         action=action,
         url=raw.get("url"),
-        value=None if raw.get("value") is None else str(raw["value"]),
+        value=raw_value,
         key=raw.get("key"),
         seconds=None if raw.get("seconds") is None else float(raw["seconds"]),
         text=raw.get("text"),
