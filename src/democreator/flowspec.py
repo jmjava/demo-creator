@@ -125,6 +125,13 @@ def _parse_step(raw: Any, where: str) -> Step:
     for required in ACTIONS[action]:
         if raw.get(required) in (None, ""):
             raise FlowSpecError(f"{where}: action '{action}' requires field '{required}'")
+    raw_timeout = raw.get("timeout_ms")
+    if raw_timeout is not None and (
+        isinstance(raw_timeout, bool)
+        or not isinstance(raw_timeout, int)
+        or raw_timeout < 0
+    ):
+        raise FlowSpecError(f"{where}: timeout_ms must be a non-negative integer")
     step = Step(
         action=action,
         url=raw.get("url"),
@@ -133,7 +140,7 @@ def _parse_step(raw: Any, where: str) -> Step:
         seconds=None if raw.get("seconds") is None else float(raw["seconds"]),
         text=raw.get("text"),
         caption=raw.get("caption"),
-        timeout_ms=None if raw.get("timeout_ms") is None else int(raw["timeout_ms"]),
+        timeout_ms=raw_timeout,
     )
     if raw.get("locator") is not None:
         step.locator = _validate_locator(raw["locator"], where)
