@@ -110,6 +110,9 @@ def _validate_locator(locator: Any, where: str) -> str | dict[str, Any]:
         value = locator[kind]
         if not isinstance(value, str) or not value.strip():
             raise FlowSpecError(f"{where}: locator {kind} must be a non-empty string")
+        # The string "false" is truthy, so it used to turn exact matching on.
+        if "exact" in locator and not isinstance(locator["exact"], bool):
+            raise FlowSpecError(f"{where}: locator exact must be a boolean")
         return locator
     raise FlowSpecError(f"{where}: locator must be a string or mapping, got {type(locator).__name__}")
 
