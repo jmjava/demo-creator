@@ -148,7 +148,10 @@ def _action_step(method: str, locator: str | dict, arg: str | None) -> dict[str,
             return None
         step["value"] = arg
     elif action == "press":
-        step["key"] = arg or "Enter"
+        # A missing key is not Enter. Inventing one records a key the test never pressed.
+        if not arg:
+            return None
+        step["key"] = arg
     return step
 
 
