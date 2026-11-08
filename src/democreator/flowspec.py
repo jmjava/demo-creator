@@ -176,6 +176,10 @@ def _parse_flow(raw: Any, index: int) -> Flow:
         raise FlowSpecError(f"{where}: tags must be a list of strings")
     base_url = raw.get("base_url")
     _require_http_base(base_url, where)
+    raw_priority = raw.get("priority", 0)
+    # bool is an int, so int(True) would quietly rank the flow above the default.
+    if isinstance(raw_priority, bool) or not isinstance(raw_priority, int):
+        raise FlowSpecError(f"{where}: priority must be an integer")
     return Flow(
         id=flow_id,
         title=raw.get("title") or flow_id,
@@ -183,7 +187,7 @@ def _parse_flow(raw: Any, index: int) -> Flow:
         description=raw.get("description", ""),
         base_url=base_url,
         source=raw.get("source"),
-        priority=int(raw.get("priority", 0)),
+        priority=raw_priority,
         tags=list(raw_tags),
     )
 
