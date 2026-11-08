@@ -136,6 +136,10 @@ def _parse_step(raw: Any, where: str) -> Step:
     # str(["red"]) used to load as the typed text "['red']".
     if raw_value is not None and not isinstance(raw_value, str):
         raise FlowSpecError(f"{where}: value must be a string")
+    raw_caption = raw.get("caption")
+    # A boolean caption is truthy, so the recorder showed it on the overlay.
+    if raw_caption is not None and not isinstance(raw_caption, str):
+        raise FlowSpecError(f"{where}: caption must be a string")
     step = Step(
         action=action,
         url=raw.get("url"),
@@ -143,7 +147,7 @@ def _parse_step(raw: Any, where: str) -> Step:
         key=raw.get("key"),
         seconds=None if raw.get("seconds") is None else float(raw["seconds"]),
         text=raw.get("text"),
-        caption=raw.get("caption"),
+        caption=raw_caption,
         timeout_ms=raw_timeout,
     )
     if raw.get("locator") is not None:
