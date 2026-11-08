@@ -142,6 +142,10 @@ def _parse_flow(raw: Any, index: int) -> Flow:
     flow_id = raw.get("id")
     if not flow_id or not isinstance(flow_id, str):
         raise FlowSpecError(f"{where}: flow needs a non-empty string 'id'")
+    # Recording and compose use the id as a file name. An absolute id replaces
+    # the recordings directory; a parent segment writes the movie beside it.
+    if Path(flow_id).name != flow_id:
+        raise FlowSpecError(f"{where}: flow id must be a file name, not a path")
     raw_steps = raw.get("steps")
     if not isinstance(raw_steps, list) or not raw_steps:
         raise FlowSpecError(f"{where} ('{flow_id}'): flow needs a non-empty 'steps' list")
